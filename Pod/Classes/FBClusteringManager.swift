@@ -40,7 +40,7 @@ public class FBClusteringManager {
 	public func add(annotations:[MKAnnotation]){
         lock.lock()
         for annotation in annotations {
-			tree?.insert(annotation: annotation)
+			_ = tree?.insert(annotation: annotation)
         }
         lock.unlock()
     }
@@ -68,12 +68,18 @@ public class FBClusteringManager {
         guard !zoomScale.isInfinite else { return [] }
         
         var cellSize = ZoomLevel(MKZoomScale(zoomScale)).cellSize()
-        if let delegate = delegate, delegate.responds(to: Selector("cellSizeFactorForCoordinator:")) {
+        if let delegate = delegate {
 			cellSize *= delegate.cellSizeFactor(forCoordinator: self)
         }
-	    
-	let shouldClusterAll = zoomScale < 0.0007
-        let shouldClusterMoreThan3 = zoomScale < 0.008
+        
+        let shouldClusterAll = zoomScale < 0.0002
+        let shouldClusterMoreThan3 = zoomScale < 0.0001
+        let shouldClusterMoreThan2 = zoomScale < 0.008
+        
+//        print(zoomScale)
+//        print(shouldClusterAll)
+//        print(shouldClusterMoreThan3)
+//        print(shouldClusterMoreThan2)
 
         let scaleFactor = zoomScale / Double(cellSize)
         
@@ -106,20 +112,20 @@ public class FBClusteringManager {
                 }
 
 				let count = annotations.count
-
+                
 				switch count {
 				case 0: break
 				case 1:
 					clusteredAnnotations += annotations
 				default:
-		            if !shouldClusterAll {
-              	        clusteredAnnotations += annotations
+                    if count < 4 && !shouldClusterAll ||
+                        count <= 3 && !shouldClusterMoreThan3 ||
+                        count <= 2 && !shouldClusterMoreThan2 {
+                        print("not clustering \(count)")
+                        clusteredAnnotations += annotations
                         break
-                    } else if !shouldClusterMoreThan3 && count < 3 {
-		                clusteredAnnotations += annotations
-                		break
-		            }
-
+                    }
+                
 					let coordinate = CLLocationCoordinate2D(
 						latitude: CLLocationDegrees(totalLatitude)/CLLocationDegrees(count),
 						longitude: CLLocationDegrees(totalLongitude)/CLLocationDegrees(count)
