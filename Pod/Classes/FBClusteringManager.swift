@@ -121,7 +121,7 @@ public class FBClusteringManager {
                     if count < 4 && !shouldClusterAll ||
                         count <= 3 && !shouldClusterMoreThan3 ||
                         count <= 2 && !shouldClusterMoreThan2 {
-                        print("not clustering \(count)")
+//                        print("not clustering \(count)")
                         clusteredAnnotations += annotations
                         break
                     }
