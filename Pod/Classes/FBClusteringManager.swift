@@ -71,6 +71,9 @@ public class FBClusteringManager {
         if let delegate = delegate, delegate.responds(to: Selector("cellSizeFactorForCoordinator:")) {
 			cellSize *= delegate.cellSizeFactor(forCoordinator: self)
         }
+	    
+	let shouldClusterAll = zoomScale < 0.0007
+        let shouldClusterMoreThan3 = zoomScale < 0.008
 
         let scaleFactor = zoomScale / Double(cellSize)
         
@@ -106,9 +109,17 @@ public class FBClusteringManager {
 
 				switch count {
 				case 0: break
-				case 1...5:
+				case 1:
 					clusteredAnnotations += annotations
 				default:
+		            if !shouldClusterAll {
+              	        clusteredAnnotations += annotations
+                        break
+                    } else if !shouldClusterMoreThan3 && count < 3 {
+		                clusteredAnnotations += annotations
+                		break
+		            }
+
 					let coordinate = CLLocationCoordinate2D(
 						latitude: CLLocationDegrees(totalLatitude)/CLLocationDegrees(count),
 						longitude: CLLocationDegrees(totalLongitude)/CLLocationDegrees(count)
