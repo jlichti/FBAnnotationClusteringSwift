@@ -72,15 +72,10 @@ public class FBClusteringManager {
 			cellSize *= delegate.cellSizeFactor(forCoordinator: self)
         }
         
-        let shouldClusterAll = zoomScale < 0.0002
-        let shouldClusterMoreThan3 = zoomScale < 0.0001
-        let shouldClusterMoreThan2 = zoomScale < 0.008
+        let shouldClusterMoreThan5 = zoomScale < 0.0002
+        let shouldClusterMoreThan10 = zoomScale < 0.0008
         
 //        print(zoomScale)
-//        print(shouldClusterAll)
-//        print(shouldClusterMoreThan3)
-//        print(shouldClusterMoreThan2)
-
         let scaleFactor = zoomScale / Double(cellSize)
         
         let minX = Int(floor(MKMapRectGetMinX(rect) * scaleFactor))
@@ -118,9 +113,7 @@ public class FBClusteringManager {
 				case 1:
 					clusteredAnnotations += annotations
 				default:
-                    if count < 4 && !shouldClusterAll ||
-                        count <= 3 && !shouldClusterMoreThan3 ||
-                        count <= 2 && !shouldClusterMoreThan2 {
+                    if count < 5 || (count < 10 && shouldClusterMoreThan10) || !shouldClusterMoreThan5  {
 //                        print("not clustering \(count)")
                         clusteredAnnotations += annotations
                         break
