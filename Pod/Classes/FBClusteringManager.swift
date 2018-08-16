@@ -16,6 +16,8 @@ public protocol FBClusteringManagerDelegate: NSObjectProtocol {
 public class FBClusteringManager {
 
     public weak var delegate: FBClusteringManagerDelegate? = nil
+    
+    public var disableClustering = false
 
 	private var backingTree: FBQuadTree?
 	private var tree: FBQuadTree? {
@@ -72,10 +74,15 @@ public class FBClusteringManager {
 			cellSize *= delegate.cellSizeFactor(forCoordinator: self)
         }
         
-        let shouldClusterMoreThan5 = zoomScale < 0.0002
-        let shouldClusterMoreThan10 = zoomScale < 0.0008
+        let shouldClusterMoreThan5 = zoomScale < 0.00001
+        let shouldClusterMoreThan10 = zoomScale < 0.00005
+        let shouldClusterMoreThan20 = zoomScale < 0.0001
+        let shouldClusterMoreThan50 = zoomScale < 0.0005
         
 //        print(zoomScale)
+//        print(">5: \(shouldClusterMoreThan5)")
+//        print(">10: \(shouldClusterMoreThan10)")
+//        print(">20: \(shouldClusterMoreThan20)")
         let scaleFactor = zoomScale / Double(cellSize)
         
         let minX = Int(floor(MKMapRectGetMinX(rect) * scaleFactor))
@@ -113,7 +120,7 @@ public class FBClusteringManager {
 				case 1:
 					clusteredAnnotations += annotations
 				default:
-                    if count < 5 || (count < 10 && shouldClusterMoreThan10) || !shouldClusterMoreThan5  {
+                    if disableClustering || count < 5 || !shouldClusterMoreThan20 || (count < 10 && !shouldClusterMoreThan5) || (count < 20 && !shouldClusterMoreThan10) || (count < 50 && !shouldClusterMoreThan20)   {
 //                        print("not clustering \(count)")
                         clusteredAnnotations += annotations
                         break
